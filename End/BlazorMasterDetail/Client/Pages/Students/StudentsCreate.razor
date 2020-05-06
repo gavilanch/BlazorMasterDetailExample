@@ -1,0 +1,30 @@
+﻿@page "/students/create"
+@inject HttpClient http
+@inject NavigationManager navigationManager
+
+<h3>Students Create</h3>
+
+<StudentsForm student="student" OnValidSubmit="OnValidSubmit" />
+
+@code {
+    Student student = new Student();
+
+    private async Task OnValidSubmit()
+    {
+        var response = await http.PostAsJsonAsync("api/students", student);
+
+        var body = await response.Content.ReadAsStringAsync();
+
+        if (response.IsSuccessStatusCode)
+        {
+            // success
+            Console.WriteLine($"the id of the user is: {body}");
+            navigationManager.NavigateTo("students");
+        }
+        else
+        {
+            // not success
+            Console.WriteLine(body);
+        }
+    }
+}

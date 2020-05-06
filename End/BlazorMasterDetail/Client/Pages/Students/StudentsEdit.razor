@@ -1,0 +1,49 @@
+﻿@page "/students/edit/{StudentId:int}"
+@inject HttpClient http
+@inject NavigationManager navigationManager
+@using  System.Text.Json
+
+<h3>Edit Student</h3>
+
+@if (student == null)
+{
+    <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" />
+}
+else
+{
+    <StudentsForm student="student" OnValidSubmit="OnValidSubmit" />
+}
+
+@code {
+    [Parameter] public int StudentId { get; set; }
+    private Student student;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var response = await http.GetAsync($"api/students/{StudentId}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            student = JsonSerializer.Deserialize<Student>(await response.Content.ReadAsStringAsync(), new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        }
+        else
+        {
+            // Error, likely a 404
+            navigationManager.NavigateTo("students");
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        var response = await http.PutAsJsonAsync("api/students", student);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("students");
+        }
+        else
+        {
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
+        }
+    }
+}
